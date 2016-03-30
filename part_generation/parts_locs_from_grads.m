@@ -35,7 +35,7 @@ function [ part_locs ] = parts_locs_from_grads(opts)
             if sum(isnan(gmap(:))) >0 || sum(gmap(:)~=0)<1
                 continue
             end
-            [est_x,est_y]=fitGMMToGradient(zeros(crop_size,crop_size,3),gmap,[],2);
+            [est_x,est_y]=part_location_from_gmap(zeros(crop_size,crop_size,3),gmap,[],2);
 %             imshow(gmap,[])
 %             hold all
 %             plot(est_x,est_y,'X','MarkerSize',20,'LineWidth',10)
