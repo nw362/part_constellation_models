@@ -23,9 +23,9 @@ function [ output_args ] = part_box_classification_multiscale( channel_ids, part
     parfor_workers = opts.parfor_workers;
     use_parfor = opts.use_parfor;
     
-    mean_file = opts.mean_mat_file;
+    mean = opts.mean;
     batch_size = opts.batch_size;
-    crop_size = opts.crop_size;
+    target_size = opts.target_size;
     deploy = opts.deploy;
     model = opts.model;
 
@@ -89,11 +89,11 @@ function [ output_args ] = part_box_classification_multiscale( channel_ids, part
     
     matcaffe_init(1,deploy,model,1,0);
     if opts.use_parts
-        f = caffe_features({[0]},layer_parts,mean_file,batch_size,crop_size);
+        f = caffe_features({[0]},layer_parts,mean,batch_size,target_size);
     else
         f = [];
     end
-    f2 = caffe_features({[0]},layer_image,mean_file,batch_size,crop_size);
+    f2 = caffe_features({[0]},layer_image,mean,batch_size,target_size);
     caffe('reset');
     
     if use_parfor
@@ -200,7 +200,7 @@ function [ output_args ] = part_box_classification_multiscale( channel_ids, part
         % Add the image
         batch_data = [batch_data; im];
         missing_data = [missing_data;false];
-        tmp = caffe_features(batch_data,layer_image,mean_file,batch_size,crop_size)'; 
+        tmp = caffe_features(batch_data,layer_image,mean,batch_size,target_size)'; 
         features(i,:) = tmp(:);
     end
     

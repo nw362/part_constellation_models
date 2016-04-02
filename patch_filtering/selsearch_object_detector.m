@@ -19,9 +19,9 @@ function [ output_args ] = selsearch_object_detector( channel_ids, part_locs, pa
     scale_relative_to_bbox = false;    
     
     % Init caffe
-    mean_file = opts.mean_mat_file;
+    mean = opts.mean;
     batch_size = opts.batch_size;
-    crop_size = opts.crop_size;
+    target_size = opts.target_size;
     deploy = opts.deploy;
     model = opts.model;
     if write_bbox
@@ -131,8 +131,8 @@ function [ output_args ] = selsearch_object_detector( channel_ids, part_locs, pa
                 x=cur_locs(k,1);
                 y=cur_locs(k,2);
                 % calc ratio 
-                ratio_x = opts.crop_size / size(im,2);
-                ratio_y = opts.crop_size / size(im,1);
+                ratio_x = opts.target_size / size(im,2);
+                ratio_y = opts.target_size / size(im,1);
                 cur_locs(k,1)=int32(x/ratio_x);
                 cur_locs(k,2)=int32(y/ratio_y);
             end
@@ -157,10 +157,10 @@ function [ output_args ] = selsearch_object_detector( channel_ids, part_locs, pa
                         x=part_based_locs(c,1);
                         y=part_based_locs(c,2);
                         if i>image_count
-                            x=opts.crop_size-x;
+                            x=opts.target_size-x;
                         end
-                        ratio_x = opts.crop_size / size(im,2);
-                        ratio_y = opts.crop_size / size(im,1);
+                        ratio_x = opts.target_size / size(im,2);
+                        ratio_y = opts.target_size / size(im,1);
                         x=int32(x/ratio_x);
                         y=int32(y/ratio_y);
                         x_min = max(x-box_size/2, 1);
@@ -181,7 +181,7 @@ function [ output_args ] = selsearch_object_detector( channel_ids, part_locs, pa
             for b=1:size(boxes,1)
                 batch_data = [batch_data; im(boxes(b,1):boxes(b,3),boxes(b,2):boxes(b,4),:)];
             end
-            probs = caffe_features(batch_data,'prob',mean_file,batch_size,crop_size);
+            probs = caffe_features(batch_data,'prob',mean,batch_size,target_size);
             if tr_ID(i)
                 pred_class = labels(i,:);
             else

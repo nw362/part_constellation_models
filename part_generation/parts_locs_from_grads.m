@@ -9,9 +9,9 @@ function [ part_locs ] = parts_locs_from_grads(opts)
     layer = opts.part_layer;
     part_count = opts.part_layer_channel_count;
     
-    mean_file = opts.mean_mat_file;
+    mean = opts.mean;
     batch_size = opts.batch_size;
-    crop_size = opts.crop_size;
+    target_size = opts.target_size;
     deploy = opts.deploy;
     model = opts.model;
         
@@ -26,20 +26,18 @@ function [ part_locs ] = parts_locs_from_grads(opts)
         if opts.verbose_output
             fprintf('Image %i: %s\n',i, imagelist{i});
         end
-        g=caffe_gradients(imread([imagedir '/' imagelist{i}]),layer,(1:part_count)',mean_file,batch_size,crop_size);
+        g=caffe_gradients(imread([imagedir '/' imagelist{i}]),layer,(1:part_count)',mean,batch_size,target_size);
+	%error;
         for p=1:part_count
             %read gradient map
-%             gmap=load(sprintf('%s%s/gradient_layer%s_channel%i.mat',basedir, imagelist{i},layer, p-1));
-%             gmap=gmap.gradient_map;
             gmap = squeeze(sum(abs(g(:,:,:,p)),3));
             if sum(isnan(gmap(:))) >0 || sum(gmap(:)~=0)<1
                 continue
             end
-            [est_x,est_y]=part_location_from_gmap(zeros(crop_size,crop_size,3),gmap,[],2);
-%             imshow(gmap,[])
-%             hold all
-%             plot(est_x,est_y,'X','MarkerSize',20,'LineWidth',10)
-%             ginput(1)
+            [est_x,est_y]=part_location_from_gmap(gmap);
+            %hold all;
+            %plot(est_x,est_y,'X','MarkerSize',20,'LineWidth',10)
+            %ginput(1);
             part_locs(i,p,:)=[est_x,est_y];
         end
     end
